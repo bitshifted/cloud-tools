@@ -1,0 +1,221 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template for a secure Terraform S3 backend
+
+Parameters:
+  BackendName:
+    Type: String
+    Description: A unique name for the shared backend (e.g., 'org-shared-tf-state').
+    AllowedPattern: "[a-zA-Z0-9-]+"
+  AssumeRolePrincipals:
+    Type: CommaDelimitedList
+    Description: Comma-separated list of IAM Principals (e.g., IAM User ARNs or Role ARNs) authorized to assume the TerraformAdminRole.
+  UseDefaultS3EncryptionKey:
+    Type: String
+    Description: Set to 'true' (default) to use default S3 encryption (AES256). Set to 'false' to use KMS.
+    AllowedValues: [true, false]
+    Default: true
+  BucketEncryptionKey:
+    Type: String
+    Description: ARN of an external KMS Key. If provided, and UseDefaultS3EncryptionKey=false, this key will be used.
+    Default: ""
+  Environment:
+    Type: String
+    Description: Environment tag value
+  Version:
+    Type: String
+    Description: Version tag value
+
+Conditions:
+  UseAES256: !Equals [!Ref UseDefaultS3EncryptionKey, 'true']
+  CreateNewKMSKey: !And
+    - !Equals [!Ref UseDefaultS3EncryptionKey, 'false']
+    - !Equals [!Ref BucketEncryptionKey, ""]
+    
+  # Helper condition for when *any* KMS is used (either new or external)
+  UseAnyKMS: !Not [!Condition UseAES256]
+
+Resources:
+  
+  ## KMS Key for S3 Encryption (CONDITIONAL: Only created if  a new one is requested)
+  TerraformStateKMSKey:
+    Type: "AWS::KMS::Key"
+    Condition: CreateNewKMSKey
+    Properties:
+      Description: KMS key for encrypting  Terraform state S3 bucket and its access logs bucket.
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: Key Administrator
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Sid: Allow S3 service to use key for encryption
+            Effect: Allow
+            Principal:
+              Service: "s3.amazonaws.com"
+            Action:
+              - "kms:Encrypt"
+              - "kms:GenerateDataKey*"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                "kms:ViaService": !Sub "s3.${AWS::Region}.amazonaws.com"
+          - Sid: Allow Terraform Role to use key for decryption
+            Effect: Allow
+            Principal:
+              AWS: !GetAtt TerraformAdminRole.Arn
+            Action:
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+            Resource: "*"
+
+  TerraformStateKMSKeyAlias:
+    Type: "AWS::KMS::Alias"
+    Condition: CreateNewKMSKey
+    Properties:
+      AliasName: !Sub "alias/${BackendName}-tf-state-key"
+      TargetKeyId: !Ref TerraformStateKMSKey
+
+
+  ## S3 Backend Bucket (Conditional Encryption: custom KMS key or AWS managed S3 encryption key)
+  TerraformStateBucket:
+    Type: "AWS::S3::Bucket"
+    # checkov:skip=CKV_AWS_19: CMK or S3 encryption is enabled based on condition
+    Properties:
+      BucketName: !Sub "${BackendName}-state-${AWS::AccountId}-${AWS::Region}"
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: !If [UseAnyKMS, "aws:kms", "AES256"]
+              KMSMasterKeyID: !If 
+                - UseAnyKMS
+                # Logic to select New Key or External Key
+                - Fn::If: 
+                    - CreateNewKMSKey
+                    - !Ref TerraformStateKMSKey 
+                    - !Ref BucketEncryptionKey
+                - !Ref "AWS::NoValue" # Use NoValue if AES256 is selected
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LoggingConfiguration:
+        DestinationBucketName: !Ref S3AccessLogsBucket
+        LogFilePrefix: !Sub "${BackendName}/terraform-state-access-logs/"
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Version
+          Value: !Ref Version
+
+  TerraformStateBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref TerraformStateBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowTerraformAdminFullAccess
+            Effect: Allow
+            Principal:
+              AWS: !GetAtt TerraformAdminRole.Arn
+            Action: 
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+              - s3:ListBucket
+              - s3:GetBucketVersioning
+              - s3:GetEncryptionConfiguration
+            Resource:
+              - !Sub "arn:aws:s3:::${TerraformStateBucket}"
+              - !Sub "arn:aws:s3:::${TerraformStateBucket}/*"
+
+  S3AccessLogsBucket:
+    Type: "AWS::S3::Bucket"
+    # checkov:skip=CKV_AWS_18: Access logging not needed for access log bucket
+    # checkov:skip=CKV_AWS_19: CMK or S3 encryption is enabled based on condition
+    # checkov:skip=CKV_AWS_21: Versioning not needed for access log bucket
+    Properties:
+      BucketName: !Sub "${BackendName}-access-logs-${AWS::AccountId}-${AWS::Region}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: !If [UseAnyKMS, "aws:kms", "AES256"]
+              KMSMasterKeyID: !If 
+                - UseAnyKMS
+                - Fn::If: #  select New Key or External Key
+                    - CreateNewKMSKey
+                    - !Ref TerraformStateKMSKey 
+                    - !Ref BucketEncryptionKey
+                - !Ref "AWS::NoValue"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Version
+          Value: !Ref Version
+
+  S3AccessLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3AccessLogsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowS3ServicePrincipalWriting
+            Effect: Allow
+            Principal:
+              Service: "s3.amazonaws.com"
+            Action: s3:PutObject
+            Resource: !Sub "arn:aws:s3:::${S3AccessLogsBucket}/*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn": !Sub "arn:aws:s3:::${TerraformStateBucket}"
+              StringEquals:
+                "aws:SourceAccount": !Ref "AWS::AccountId"
+
+
+  ## IAM Role for Terraform Execution
+  TerraformAdminRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "${BackendName}-TerraformAdminRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref AssumeRolePrincipals
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AdministratorAccess"
+
+
+  ## Outputs
+Outputs:
+  SharedBackendBucketName:
+    Description: The name of the S3 bucket to use for the shared Terraform backend.
+    Value: !Ref TerraformStateBucket
+    Export:
+      Name: !Sub "${BackendName}-SharedStateBucketName"
+
+  TerraformBackendRegion:
+    Description: The region where the shared backend is deployed.
+    Value: !Ref "AWS::Region"
+
+  TerraformAdminRoleARN:
+    Description: The ARN of the administrative IAM role for Terraform execution.
+    Value: !GetAtt TerraformAdminRole.Arn
+    Export:
+      Name: !Sub "${BackendName}-TerraformAdminRoleARN"
+

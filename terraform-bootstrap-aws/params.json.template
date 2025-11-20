@@ -1,0 +1,22 @@
+[
+    {
+        "ParameterKey": "BackendName",
+        "ParameterValue": "my-terraform-backend"
+    },
+    {
+        "ParameterKey": "UseDefaultS3EncryptionKey",
+        "ParameterValue": false
+    },
+    {
+        "ParameterKey": "AssumeRolePrincipals",
+        "ParameterValue": "arn:aws:iam:123456789:eu-central-1:/users/my-user, arn:aws:::/roles/role1"
+    },
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "prod"
+    },
+    {
+        "ParameterKey": "Version",
+        "ParameterValue": "1.0.0"
+    }
+]
