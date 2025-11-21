@@ -1,0 +1,30 @@
+{
+  "Version":"2012-10-17",		 	 	 
+  "Statement": [
+    {
+      "Sid": "ReadOnlyAccessForAllKMSKeysInAccount",
+      "Effect": "Allow",
+      "Action": [
+        "kms:GetPublicKey",        
+        "kms:GetKeyRotationStatus",
+        "kms:GetKeyPolicy",
+        "kms:DescribeKey",
+        "kms:ListKeyPolicies",
+        "kms:ListResourceTags",
+        "tag:GetResources"
+      ],
+      "Resource": "arn:aws:kms:*:111122223333:key/*"
+    },
+    {
+      "Sid": "ReadOnlyAccessForOperationsWithNoKMSKey",
+      "Effect": "Allow",
+      "Action": [
+        "kms:ListKeys",
+        "kms:ListAliases",
+        "iam:ListRoles",
+        "iam:ListUsers"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
