@@ -1,3 +1,6 @@
+// Copyright 2025 Bitshift
+// SPDX-License-Identifier: MPL-2.0
+
 
 mock_provider "aws" {
   

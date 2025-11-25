@@ -1,3 +1,6 @@
+// Copyright 2025 Bitshift
+// SPDX-License-Identifier: MPL-2.0
+
 mock_provider "aws" {}
 
 run "repositories_creation" {
@@ -110,4 +113,20 @@ run "output_should_return_created_repository_names" {
       condition     = contains(output.created_repositories, "repo-one") && contains(output.created_repositories, "repo-two")
       error_message = "The output 'created_repositories' does not contain the expected repository names."
     }
+}
+
+run "validate_external_connection_value" {
+    command = plan
+
+    variables  {
+        domain_name = "test-domain"
+        repositories = [
+            {
+                repository_name     = "repo-with-invalid-connection"
+                external_connection = "invalid-connection"
+            }
+        ]
+    }
+
+    expect_failures = [ var.repositories[0].external_connection ]
 }
