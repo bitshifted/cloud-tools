@@ -1,3 +1,0 @@
-terraform-bootstrap-aws
-Enable backups: https://docs.aws.amazon.com/prescriptive-guidance/latest/terraform-aws-provider-best-practices/backend.html#separate-backends
-make access log bucket optional. Ability to specify existing bucket instead of creating new one
