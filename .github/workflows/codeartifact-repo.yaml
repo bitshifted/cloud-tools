@@ -32,7 +32,8 @@ jobs:
           terraform_version: 1.14.0
       - name: Run verification
         run: |
-          echo "Current directory: ${PWD}""
+          echo "Current directory: ${PWD}"
+          ls -la
           make codertifact-repo-verify
   release:
     needs: test-and-verify
