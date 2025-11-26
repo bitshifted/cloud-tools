@@ -1,6 +1,6 @@
 ---
 
-name: Verify and build tf-bootstrap-aws module
+name: tf-bootstrap-aws - verify and build
 
 on:
   push:
@@ -29,3 +29,20 @@ jobs:
       - name: Run linter
         run: |
             cfn-lint tf-bootstrap-aws/tf-bootstrap.yml
+  release:
+    needs: test-and-verify
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Calculate version
+        id: calculate-version
+        uses: bitshifted/git-auto-semver@v2
+        with:
+          create_tag: true
+          initial_version: '1.0.0'
+          tag_prefix: 'tf-bootstrap-aws-'
