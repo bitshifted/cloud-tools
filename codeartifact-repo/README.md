@@ -22,7 +22,7 @@ This module is intended to configure AWS CodeArtifact domains and repositories.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.21.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 6.21.0 |
 
 ## Resources
 

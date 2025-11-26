@@ -1,0 +1,31 @@
+---
+
+name: Verify and build tf-bootstrap-aws module
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tf-bootstrap-aws/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tf-bootstrap-aws/**'
+
+jobs:
+  test-and-verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Install cfn-lint
+        run: |
+         pip install cfn-lint
+      - name: Run linter
+        run: |
+            cfn-lint tf-bootstrap-aws/tf-bootstrap.yml
