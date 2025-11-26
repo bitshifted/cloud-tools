@@ -23,7 +23,7 @@ terraform test || exit 1
 echo "Terraform tests successfull"
 
 echo "Running tflint..."
-tflint -c ../.tflint.hcl || exit 1
+tflint -c ../.tflint.hcl --init && tflint -c ../.tflint.hcl || exit 1
 echo "Tflint check successfull"
 
 echo "Running Checkov scan..."
