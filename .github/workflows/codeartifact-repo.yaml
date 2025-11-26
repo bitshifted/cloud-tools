@@ -33,7 +33,7 @@ jobs:
       - name: Setup tflint
         uses: terraform-linters/setup-tflint@v6
         with:
-          tflint_version: '0.60.0'
+          tflint_version: 'v0.60.0'
       - name: Install Checkov
         run: |
           pip install checkov
