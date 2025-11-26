@@ -1,0 +1,26 @@
+---
+on:
+  workflow_call:
+    inputs:
+      tag-prefix:
+        description: 'Tag prefix to use for versioning'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Calculate version
+        id: calculate-version
+        uses: bitshifted/git-auto-semver@v2
+        with:
+          create_tag: true
+          initial_version: '1.0.0'
+          tag_prefix: '${{ inputs.tag-prefix }}'

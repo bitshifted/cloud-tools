@@ -1,0 +1,40 @@
+---
+name: codeartifact-repo - verify and build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'codeartifact-repo/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'codeartifact-repo/**'
+
+jobs:
+  test-and-verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.14.0
+      - name: Run verification
+        run: |
+          make codertifact-repo-verify
+  release:
+    needs: test-and-verify
+    uses: ./.github/workflows/common-release.yaml
+    with:
+      tag-prefix: 'codeartifact-repo-'
