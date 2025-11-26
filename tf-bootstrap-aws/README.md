@@ -1,6 +1,6 @@
 # Terraform Bootstrap AWS - Cloudformation template
 
-This Cloudformation template is intended to bootstrap AWs S3 backend for use with Terraform pipelines. It creates S3 buckets and IAM roles needed to store Terraform state in S3.
+This Cloudformation template is intended to bootstrap AWS S3 backend for use with Terraform pipelines. It creates S3 buckets and IAM roles needed to store Terraform state in S3.
 
 ## Motivation
 
