@@ -12,6 +12,10 @@
         "ParameterValue": "arn:aws:iam:123456789:eu-central-1:/users/my-user, arn:aws:::/roles/role1"
     },
     {
+        "ParameterKey": "EnableS3AccessLogging",
+        "ParameterValue": "true"
+    },
+    {
         "ParameterKey": "Environment",
         "ParameterValue": "prod"
     },

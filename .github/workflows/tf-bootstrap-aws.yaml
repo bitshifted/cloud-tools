@@ -23,12 +23,15 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-      - name: Install cfn-lint
+      - name: Install tools
         run: |
          pip install cfn-lint
-      - name: Run linter
+         pip install checkov
+      - name: Run static analysis
         run: |
             cfn-lint tf-bootstrap-aws/tf-bootstrap.yml
+            checkov -d tf-bootstrap-aws/ --framework cloudformation
+
   release:
     needs: test-and-verify
     uses: ./.github/workflows/common-release.yaml
