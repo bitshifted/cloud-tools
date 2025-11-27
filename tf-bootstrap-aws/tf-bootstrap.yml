@@ -18,7 +18,7 @@ Parameters:
     Type: String
     Description: ARN of an external KMS Key. If provided, and UseDefaultS3EncryptionKey=false, this key will be used.
     Default: ""
-  EnableS3AccessLogs:
+  EnableS3AccessLogging:
     Type: String
     Description: Set to 'true' to enable S3 access logging for the Terraform state bucket.
     AllowedValues: [true, false]
@@ -36,7 +36,7 @@ Conditions:
     - !Equals [!Ref UseDefaultS3EncryptionKey, 'false']
     - !Equals [!Ref BucketEncryptionKey, ""]
 
-  AccessLoggingEnabled: !Equals [!Ref EnableS3AccessLogs, 'true']
+  AccessLoggingEnabled: !Equals [!Ref EnableS3AccessLogging, 'true']
     
   # Helper condition for when *any* KMS is used (either new or external)
   UseAnyKMS: !Not [!Condition UseAES256]
@@ -112,11 +112,12 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
-      LoggingConfiguration: !If
-        - AccessLoggingEnabled
-        - DestinationBucketName: !Ref S3AccessLogsBucket
-          LogFilePrefix: !Sub "${BackendName}/terraform-state-access-logs/"
-        - !Ref "AWS::NoValue"
+      LoggingConfiguration:
+        Fn::If:
+          - AccessLoggingEnabled
+          - DestinationBucketName: !Ref S3AccessLogsBucket
+            LogFilePrefix: !Sub "${BackendName}/terraform-state-access-logs/"
+          - !Ref "AWS::NoValue"
       Tags:
         - Key: Environment
           Value: !Ref Environment

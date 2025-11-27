@@ -33,6 +33,7 @@ Template can be customized by the following parameters:
 * `AssumeRolePrincipals` (required) - list of principals who are allowed to assume Terraform execution role
 * `UseDefaultS3EncryptionKey` (optional) - if `true` (default) use default AWS managed S3 encryption key. Otherwise, use customer managed KMS key
 * `BucketEncryptionKey` (optional) - ARN of the customer managed KMS key used for bucket encryption. If specified, and `UseDefaultS3EncryptionKey` is `false`, this key will be used for encryption. If not specified, and `UseDefaultS3EncryptionKey` is `false`, new KMS key will be created
+* `EnableS3AccessLogging` (optional) - if `true` (default), S3 bucket for access logging will be use and access logging enabled. Otherwise, access logging will not be enabled.
 * `Environment` (requried) - value for the `Environment` tag applied to resources
 * `Version` (requried) - value for the `Version` tag applied to resources
 
@@ -51,5 +52,23 @@ aws cloudformation deploy \
 
 ```
 
+## Terraform backend configuration
 
+Use the following backend configuration in Terraform:
 
+```hcl
+terraform {
+  backend "s3" {
+     bucket = "bucket-name"
+     region = "us-east-1"
+     key = "path/to/my/terraform.tfstate"
+     use_lockfile = true
+
+     assume_role = {
+       role_arn = "arn:aws:iam::123456789012:role/created-role"
+     }
+  }
+}
+```
+
+This configuration assumes that principal running Terraform plan has permission to assume created role, as defined in the parameters for the stack.
