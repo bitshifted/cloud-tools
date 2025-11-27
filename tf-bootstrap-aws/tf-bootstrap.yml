@@ -112,9 +112,11 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
-      LoggingConfiguration:
-        DestinationBucketName: !Ref S3AccessLogsBucket
-        LogFilePrefix: !Sub "${BackendName}/terraform-state-access-logs/"
+      LoggingConfiguration: !If
+        - AccessLoggingEnabled
+        - DestinationBucketName: !Ref S3AccessLogsBucket
+          LogFilePrefix: !Sub "${BackendName}/terraform-state-access-logs/"
+        - !Ref "AWS::NoValue"
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -175,6 +177,7 @@ Resources:
 
   S3AccessLogsBucketPolicy:
     Type: AWS::S3::BucketPolicy
+    Condition: AccessLoggingEnabled
     Properties:
       Bucket: !Ref S3AccessLogsBucket
       PolicyDocument:
