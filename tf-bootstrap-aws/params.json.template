@@ -16,6 +16,10 @@
         "ParameterValue": "true"
     },
     {
+        "ParameterKey": "CustomAccessLogBucket",
+        "ParameterValue": "my-logging-bucket"
+    },
+    {
         "ParameterKey": "Environment",
         "ParameterValue": "prod"
     },
