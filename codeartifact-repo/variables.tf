@@ -50,13 +50,15 @@ variable "domain_permissions_policy_revision" {
 
 variable "repositories" {
   type = list(object({
-    repository_name      = string
-    description          = optional(string, "")
-    region               = optional(string, null)
-    domain_owner         = optional(string, null)
-    upstream             = optional(string, null)
-    external_connection  = optional(string, null)
-    policy_document_path = optional(string, null)
+    repository_name                 = string
+    description                     = optional(string, "")
+    region                          = optional(string, null)
+    domain_owner                    = optional(string, null)
+    upstream                        = optional(string, null)
+    external_connection             = optional(string, null)
+    policy_document_path            = optional(string, null)
+    default_read_access_principals  = optional(list(string), null)
+    default_write_access_principals = optional(list(string), null)
   }))
   description = "List of repositories within Codeartifact domain"
   default     = []

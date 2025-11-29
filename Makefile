@@ -9,4 +9,4 @@ codeartifact-repo-format: init
 	cd ./codeartifact-repo && ../scripts/format.sh 
 
 codeartifact-repo-verify: init
-	cd ./codeartifact-repo && terraform-docs -c ../.terraform-docs.yaml . && ../scripts/verify.sh 
+	cd ./codeartifact-repo  && ../scripts/verify.sh 

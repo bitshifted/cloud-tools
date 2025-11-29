@@ -15,3 +15,8 @@ output "created_repositories" {
   description = "A list of names of the created repositories."
   value       = tolist(keys(aws_codeartifact_repository.repository))
 }
+
+output "debug_repo_final_policy" {
+  description = "DEBUG: Shows the generated repository policies."
+  value       = local.repo_final_policy_documents
+}
