@@ -12,8 +12,15 @@ locals {
   repo_write_access_principals = {
     for repo in var.repositories : repo.repository_name => repo.default_write_access_principals
   }
-  repo_final_policy_documents = {
-    for repo in var.repositories : repo.repository_name => data.aws_iam_policy_document.combined_default_policies[repo.repository_name] if length(data.aws_iam_policy_document.combined_default_policies) > 0 && contains(keys(data.aws_iam_policy_document.combined_default_policies),repo.repository_name)
+  repo_final_policy_documents = data.aws_iam_policy_document.combined_default_policies
+  repos_with_policy_files = [
+    for repo in var.repositories : repo.repository_name if repo.policy_document_path != null
+  ]
+  all_sts_principals = {
+    for repo in var.repositories : repo.repository_name => distinct(concat(
+      repo.default_read_access_principals != null ? repo.default_read_access_principals : [],
+      repo.default_write_access_principals != null ? repo.default_write_access_principals : []
+    ))
   }
 }
 
@@ -62,24 +69,20 @@ data "aws_iam_policy_document" "default_readonly_repo_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "codeartifact:GetAuthorizationToken",
+      "codeartifact:DescribePackageVersion",
+      "codeartifact:DescribeRepository",
+      "codeartifact:GetPackageVersionReadme",
       "codeartifact:GetRepositoryEndpoint",
-      "codeartifact:ReadFromRepository",
+      "codeartifact:ListPackageVersionAssets",
+      "codeartifact:ListPackageVersionDependencies",
+      "codeartifact:ListPackageVersions",
+      "codeartifact:ListPackages",
+      "codeartifact:ReadFromRepository"
     ]
-    resources = [aws_codeartifact_repository.repository[each.key].arn]
+    resources = ["*"]
     principals {
-      type        = "*"
+      type        = "AWS"
       identifiers = each.value
-    }
-  }
-  statement {
-    effect    = "Allow"
-    actions   = ["sts:GetServiceBearerToken"]
-    resources = [aws_codeartifact_repository.repository[each.key].arn]
-    condition {
-      variable = "sts:AWSServiceName"
-      values   = ["codeartifact.amazonaws.com"]
-      test     = "StringEquals"
     }
   }
 }
@@ -89,22 +92,36 @@ data "aws_iam_policy_document" "default_write_access_repo_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "codeartifact:GetAuthorizationToken",
+      "codeartifact:DescribePackageVersion",
+      "codeartifact:DescribeRepository",
+      "codeartifact:GetPackageVersionReadme",
       "codeartifact:GetRepositoryEndpoint",
-      "codeartifact:ReadFromRepository",
+      "codeartifact:ListPackageVersionAssets",
+      "codeartifact:ListPackageVersionDependencies",
+      "codeartifact:ListPackageVersions",
+      "codeartifact:ListPackages",
+      "codeartifact:PublishPackageVersion",
       "codeartifact:PutPackageMetadata",
-      "codeartifact:PublishPackageVersion"
+      "codeartifact:ReadFromRepository"
     ]
-    resources = [aws_codeartifact_repository.repository[each.key].arn]
+    resources = ["*"]
     principals {
-      type        = "*"
+      type        = "AWS"
       identifiers = each.value
     }
   }
+}
+
+data "aws_iam_policy_document" "default_sts_policy" {
+  for_each = local.all_sts_principals
   statement {
     effect    = "Allow"
     actions   = ["sts:GetServiceBearerToken"]
     resources = [aws_codeartifact_repository.repository[each.key].arn]
+    principals {
+      type        = "AWS"
+      identifiers = each.value
+    }
     condition {
       variable = "sts:AWSServiceName"
       values   = ["codeartifact.amazonaws.com"]
@@ -114,7 +131,7 @@ data "aws_iam_policy_document" "default_write_access_repo_policy" {
 }
 
 data "aws_iam_policy_document" "combined_default_policies" {
-  for_each = { for repo in var.repositories : repo.repository_name => repo if local.repo_read_access_principals[repo.repository_name] != null || local.repo_write_access_principals[repo.repository_name] != null }
+  for_each = { for repo in var.repositories : repo.repository_name => repo if(local.repo_read_access_principals[repo.repository_name] != null || local.repo_write_access_principals[repo.repository_name] != null) && repo.policy_document_path == null }
 
   source_policy_documents = compact(
     [
@@ -125,10 +142,10 @@ data "aws_iam_policy_document" "combined_default_policies" {
 }
 
 resource "aws_codeartifact_repository_permissions_policy" "repo_permissions_policy" {
-  for_each        = { for repo in var.repositories : repo.repository_name => repo }
+  for_each        = { for repo in var.repositories : repo.repository_name => repo if repo.policy_document_path != null || contains(keys(local.repo_final_policy_documents), repo.repository_name) }
   repository      = aws_codeartifact_repository.repository[each.key].repository
   domain          = aws_codeartifact_domain.repo_domain.domain
-  policy_document = each.value.policy_document_path != null ? file(each.value.policy_document_path) : (contains(keys(local.repo_final_policy_documents), each.key) ? local.repo_final_policy_documents[each.key].json : null)
+  policy_document = each.value.policy_document_path != null ? file(each.value.policy_document_path) : local.repo_final_policy_documents[each.key].json
   region          = var.repo_region != null ? var.repo_region : null
   domain_owner    = each.value.domain_owner != null ? each.value.domain_owner : null
 }

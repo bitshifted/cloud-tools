@@ -54,8 +54,10 @@ This module is intended to configure AWS CodeArtifact domains and repositories.
 | Name | Description |
 |------|-------------|
 | <a name="output_created_repositories"></a> [created\_repositories](#output\_created\_repositories) | A list of names of the created repositories. |
+| <a name="output_default_sts_policies"></a> [default\_sts\_policies](#output\_default\_sts\_policies) | Created STS policies |
 | <a name="output_domain"></a> [domain](#output\_domain) | Name of the CodeArtifact domain |
 | <a name="output_domain_owner"></a> [domain\_owner](#output\_domain\_owner) | Owner account of the CodeArtifact domain |
+| <a name="output_policy_documents"></a> [policy\_documents](#output\_policy\_documents) | A map of repository names to their applied policy documents (if any). |
 
 ## Examples
 <!-- END_TF_DOCS -->

@@ -16,7 +16,12 @@ output "created_repositories" {
   value       = tolist(keys(aws_codeartifact_repository.repository))
 }
 
-output "debug_repo_final_policy" {
-  description = "DEBUG: Shows the generated repository policies."
-  value       = local.repo_final_policy_documents
+output "policy_documents" {
+  description = "A map of repository names to their applied policy documents (if any)."
+  value       = { for repo_name, repo_policy in aws_codeartifact_repository_permissions_policy.repo_permissions_policy : repo_name => repo_policy.policy_document }
+}
+
+output "default_sts_policies" {
+  description = "Created STS policies"
+  value       = { for repo_name, sts_policy in data.aws_iam_policy_document.default_sts_policy : repo_name => sts_policy.json }
 }
