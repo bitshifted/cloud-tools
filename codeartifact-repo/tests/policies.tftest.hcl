@@ -1,7 +1,26 @@
 // Copyright 2025 Bitshift
 // SPDX-License-Identifier: MPL-2.0
 
-mock_provider "aws" {}
+mock_provider "aws" {
+  override_data {
+    target = data.aws_iam_policy_document.default_readonly_repo_policy
+    values = {
+      json = "{}"
+    }
+  }
+  override_data {
+    target = data.aws_iam_policy_document.default_write_access_repo_policy
+    values = {
+      json = "{}"
+    }
+  }
+  override_data {
+    target = data.aws_iam_policy_document.combined_default_policies
+    values = {
+      json = "{}"
+    }
+  }
+}
 
 run "default_policy_should_be_created_when_principals_specified" {
   command = plan
@@ -25,6 +44,11 @@ run "default_policy_should_be_created_when_principals_specified" {
     assert {
       condition     = length(data.aws_iam_policy_document.default_write_access_repo_policy) == 1
       error_message = "Default write-access policy document was not created."
+    }
+
+    assert {
+      condition = length(data.aws_iam_policy_document.default_sts_policy) == 1
+      error_message = "Default STS policy document was not created."
     }
 }
 

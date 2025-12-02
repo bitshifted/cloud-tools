@@ -7,15 +7,17 @@ locals {
   should_create_kms_key = (!var.use_default_ecnryption_key && var.encryption_key_arn == null) ? true : false
 
   repo_read_access_principals = {
-    for repo in var.repositories : repo.repository_name => repo.default_read_access_principals
+    for repo in var.repositories : repo.repository_name => repo.default_read_access_principals if(repo.default_read_access_principals != null
+    && length(repo.default_read_access_principals) > 0)
   }
   repo_write_access_principals = {
-    for repo in var.repositories : repo.repository_name => repo.default_write_access_principals
+    for repo in var.repositories : repo.repository_name => repo.default_write_access_principals if(repo.default_write_access_principals != null
+    && length(repo.default_write_access_principals) > 0)
   }
   repo_final_policy_documents = data.aws_iam_policy_document.combined_default_policies
-  repos_with_policy_files = [
-    for repo in var.repositories : repo.repository_name if repo.policy_document_path != null
-  ]
+  # repos_with_policy_files = [
+  #   for repo in var.repositories : repo.repository_name if repo.policy_document_path != null
+  # ]
   all_sts_principals = {
     for repo in var.repositories : repo.repository_name => distinct(concat(
       repo.default_read_access_principals != null ? repo.default_read_access_principals : [],
@@ -65,7 +67,7 @@ resource "aws_codeartifact_repository" "repository" {
 }
 
 data "aws_iam_policy_document" "default_readonly_repo_policy" {
-  for_each = { for k, v in local.repo_read_access_principals : k => v if v != null }
+  for_each = { for k, v in local.repo_read_access_principals : k => v }
   statement {
     effect = "Allow"
     actions = [
@@ -77,9 +79,9 @@ data "aws_iam_policy_document" "default_readonly_repo_policy" {
       "codeartifact:ListPackageVersionDependencies",
       "codeartifact:ListPackageVersions",
       "codeartifact:ListPackages",
-      "codeartifact:ReadFromRepository"
+      "codeartifact:ReadFromRepository",
     ]
-    resources = ["*"]
+    resources = [aws_codeartifact_repository.repository[each.key].arn]
     principals {
       type        = "AWS"
       identifiers = each.value
@@ -88,7 +90,7 @@ data "aws_iam_policy_document" "default_readonly_repo_policy" {
 }
 
 data "aws_iam_policy_document" "default_write_access_repo_policy" {
-  for_each = { for k, v in local.repo_write_access_principals : k => v if v != null }
+  for_each = { for k, v in local.repo_write_access_principals : k => v }
   statement {
     effect = "Allow"
     actions = [
@@ -102,9 +104,9 @@ data "aws_iam_policy_document" "default_write_access_repo_policy" {
       "codeartifact:ListPackages",
       "codeartifact:PublishPackageVersion",
       "codeartifact:PutPackageMetadata",
-      "codeartifact:ReadFromRepository"
+      "codeartifact:ReadFromRepository",
     ]
-    resources = ["*"]
+    resources = [aws_codeartifact_repository.repository[each.key].arn]
     principals {
       type        = "AWS"
       identifiers = each.value
@@ -131,12 +133,13 @@ data "aws_iam_policy_document" "default_sts_policy" {
 }
 
 data "aws_iam_policy_document" "combined_default_policies" {
-  for_each = { for repo in var.repositories : repo.repository_name => repo if(local.repo_read_access_principals[repo.repository_name] != null || local.repo_write_access_principals[repo.repository_name] != null) && repo.policy_document_path == null }
+  for_each = { for repo in var.repositories : repo.repository_name => repo if contains(keys(local.repo_read_access_principals), repo.repository_name) || contains(keys(local.repo_write_access_principals), repo.repository_name) }
 
   source_policy_documents = compact(
     [
       try(data.aws_iam_policy_document.default_readonly_repo_policy[each.key].json, null),
-      try(data.aws_iam_policy_document.default_write_access_repo_policy[each.key].json, null)
+      try(data.aws_iam_policy_document.default_write_access_repo_policy[each.key].json, null),
+      try(data.aws_iam_policy_document.default_sts_policy[each.key].json, null)
     ]
   )
 }
