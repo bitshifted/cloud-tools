@@ -45,7 +45,7 @@ This module is intended to configure AWS CodeArtifact domains and repositories.
 | <a name="input_domain_policy_document_path"></a> [domain\_policy\_document\_path](#input\_domain\_policy\_document\_path) | Path to IAM policy document applied to Codeartifact domain | `string` | `null` | no |
 | <a name="input_encryption_key_arn"></a> [encryption\_key\_arn](#input\_encryption\_key\_arn) | ARN of KMS key used for repository encryption. If not specified, and use\_default\_ecnryption\_key is false, creates new KMS key | `string` | `null` | no |
 | <a name="input_repo_region"></a> [repo\_region](#input\_repo\_region) | Region in which repository will be managed. If not specified, defaults to region configured for provider | `string` | `null` | no |
-| <a name="input_repositories"></a> [repositories](#input\_repositories) | List of repositories within Codeartifact domain | <pre>list(object({<br/>    repository_name      = string<br/>    description          = optional(string, "")<br/>    region               = optional(string, null)<br/>    domain_owner         = optional(string, null)<br/>    upstream             = optional(string, null)<br/>    external_connection  = optional(string, null)<br/>    policy_document_path = optional(string, null)<br/>  }))</pre> | `[]` | no |
+| <a name="input_repositories"></a> [repositories](#input\_repositories) | List of repositories within Codeartifact domain | <pre>list(object({<br/>    repository_name                 = string<br/>    description                     = optional(string, "")<br/>    region                          = optional(string, null)<br/>    domain_owner                    = optional(string, null)<br/>    upstream                        = optional(string, null)<br/>    external_connection             = optional(string, null)<br/>    policy_document_path            = optional(string, null)<br/>    default_read_access_principals  = optional(list(string), null)<br/>    default_write_access_principals = optional(list(string), null)<br/>  }))</pre> | `[]` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to be applied to resources | `map(string)` | `{}` | no |
 | <a name="input_use_default_ecnryption_key"></a> [use\_default\_ecnryption\_key](#input\_use\_default\_ecnryption\_key) | Whether to use default  Codeartifact KMS key (defaults to true) | `bool` | `true` | no |
 
@@ -54,8 +54,10 @@ This module is intended to configure AWS CodeArtifact domains and repositories.
 | Name | Description |
 |------|-------------|
 | <a name="output_created_repositories"></a> [created\_repositories](#output\_created\_repositories) | A list of names of the created repositories. |
+| <a name="output_default_sts_policies"></a> [default\_sts\_policies](#output\_default\_sts\_policies) | Created STS policies |
 | <a name="output_domain"></a> [domain](#output\_domain) | Name of the CodeArtifact domain |
 | <a name="output_domain_owner"></a> [domain\_owner](#output\_domain\_owner) | Owner account of the CodeArtifact domain |
+| <a name="output_policy_documents"></a> [policy\_documents](#output\_policy\_documents) | A map of repository names to their applied policy documents (if any). |
 
 ## Examples
 <!-- END_TF_DOCS -->
