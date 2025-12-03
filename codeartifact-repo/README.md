@@ -32,20 +32,29 @@ This module is intended to configure AWS CodeArtifact domains and repositories.
 | [aws_codeartifact_domain_permissions_policy.domain_permissions_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codeartifact_domain_permissions_policy) | resource |
 | [aws_codeartifact_repository.repository](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codeartifact_repository) | resource |
 | [aws_codeartifact_repository_permissions_policy.repo_permissions_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codeartifact_repository_permissions_policy) | resource |
+| [aws_iam_role.admin_access_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.publisher_access_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.read_access_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.admin_access_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy.publisher_access_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy.read_only_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_kms_key.domain_encryption_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_admin_principals"></a> [admin\_principals](#input\_admin\_principals) | List of AWS principal ARNs that have admin access to domain and repositories | `list(string)` | `[]` | no |
 | <a name="input_domain_encryption_key_policy_path"></a> [domain\_encryption\_key\_policy\_path](#input\_domain\_encryption\_key\_policy\_path) | Path to file containing IAM policy to be applied to created encryption key | `string` | `null` | no |
 | <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name) | Domain name of the repository | `string` | n/a | yes |
 | <a name="input_domain_owner"></a> [domain\_owner](#input\_domain\_owner) | Account number of the account that owns the repository. If not set, defaults to the account running Terraform | `string` | `null` | no |
 | <a name="input_domain_permissions_policy_revision"></a> [domain\_permissions\_policy\_revision](#input\_domain\_permissions\_policy\_revision) | Current revision of the domain permission policy to set | `string` | `null` | no |
 | <a name="input_domain_policy_document_path"></a> [domain\_policy\_document\_path](#input\_domain\_policy\_document\_path) | Path to IAM policy document applied to Codeartifact domain | `string` | `null` | no |
 | <a name="input_encryption_key_arn"></a> [encryption\_key\_arn](#input\_encryption\_key\_arn) | ARN of KMS key used for repository encryption. If not specified, and use\_default\_ecnryption\_key is false, creates new KMS key | `string` | `null` | no |
+| <a name="input_publisher_principals"></a> [publisher\_principals](#input\_publisher\_principals) | List of AWS principal ARNS thet should have permissions to publish packages | `list(string)` | `[]` | no |
+| <a name="input_reader_principals"></a> [reader\_principals](#input\_reader\_principals) | List of AWS principals ARNs that should have read access to domain and repositories | `list(string)` | `[]` | no |
 | <a name="input_repo_region"></a> [repo\_region](#input\_repo\_region) | Region in which repository will be managed. If not specified, defaults to region configured for provider | `string` | `null` | no |
-| <a name="input_repositories"></a> [repositories](#input\_repositories) | List of repositories within Codeartifact domain | <pre>list(object({<br/>    repository_name                 = string<br/>    description                     = optional(string, "")<br/>    region                          = optional(string, null)<br/>    domain_owner                    = optional(string, null)<br/>    upstream                        = optional(string, null)<br/>    external_connection             = optional(string, null)<br/>    policy_document_path            = optional(string, null)<br/>    default_read_access_principals  = optional(list(string), null)<br/>    default_write_access_principals = optional(list(string), null)<br/>  }))</pre> | `[]` | no |
+| <a name="input_repositories"></a> [repositories](#input\_repositories) | List of repositories within Codeartifact domain | <pre>list(object({<br/>    repository_name      = string<br/>    description          = optional(string, "")<br/>    region               = optional(string, null)<br/>    domain_owner         = optional(string, null)<br/>    upstream             = optional(string, null)<br/>    external_connection  = optional(string, null)<br/>    policy_document_path = optional(string, null)<br/>  }))</pre> | `[]` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to be applied to resources | `map(string)` | `{}` | no |
 | <a name="input_use_default_ecnryption_key"></a> [use\_default\_ecnryption\_key](#input\_use\_default\_ecnryption\_key) | Whether to use default  Codeartifact KMS key (defaults to true) | `bool` | `true` | no |
 
@@ -54,7 +63,6 @@ This module is intended to configure AWS CodeArtifact domains and repositories.
 | Name | Description |
 |------|-------------|
 | <a name="output_created_repositories"></a> [created\_repositories](#output\_created\_repositories) | A list of names of the created repositories. |
-| <a name="output_default_sts_policies"></a> [default\_sts\_policies](#output\_default\_sts\_policies) | Created STS policies |
 | <a name="output_domain"></a> [domain](#output\_domain) | Name of the CodeArtifact domain |
 | <a name="output_domain_owner"></a> [domain\_owner](#output\_domain\_owner) | Owner account of the CodeArtifact domain |
 | <a name="output_policy_documents"></a> [policy\_documents](#output\_policy\_documents) | A map of repository names to their applied policy documents (if any). |

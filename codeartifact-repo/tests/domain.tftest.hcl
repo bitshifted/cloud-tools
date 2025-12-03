@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 
-mock_provider "aws" {
-  
-}
+mock_provider "aws" {}
 
 run "invalid_encryption_key_arn_should_produce_error" {
     command = plan

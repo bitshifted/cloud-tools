@@ -48,17 +48,33 @@ variable "domain_permissions_policy_revision" {
   default     = null
 }
 
+variable "reader_principals" {
+  type        = list(string)
+  description = "List of AWS principals ARNs that should have read access to domain and repositories"
+  default     = []
+}
+
+variable "publisher_principals" {
+  type        = list(string)
+  description = "List of AWS principal ARNS thet should have permissions to publish packages"
+  default     = []
+}
+
+variable "admin_principals" {
+  type        = list(string)
+  description = "List of AWS principal ARNs that have admin access to domain and repositories"
+  default     = []
+}
+
 variable "repositories" {
   type = list(object({
-    repository_name                 = string
-    description                     = optional(string, "")
-    region                          = optional(string, null)
-    domain_owner                    = optional(string, null)
-    upstream                        = optional(string, null)
-    external_connection             = optional(string, null)
-    policy_document_path            = optional(string, null)
-    default_read_access_principals  = optional(list(string), null)
-    default_write_access_principals = optional(list(string), null)
+    repository_name      = string
+    description          = optional(string, "")
+    region               = optional(string, null)
+    domain_owner         = optional(string, null)
+    upstream             = optional(string, null)
+    external_connection  = optional(string, null)
+    policy_document_path = optional(string, null)
   }))
   description = "List of repositories within Codeartifact domain"
   default     = []
