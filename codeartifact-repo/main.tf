@@ -5,26 +5,9 @@
 
 locals {
   should_create_kms_key = (!var.use_default_ecnryption_key && var.encryption_key_arn == null) ? true : false
-
-  repo_read_access_principals = {
-    for repo in var.repositories : repo.repository_name => repo.default_read_access_principals if(repo.default_read_access_principals != null
-    && length(repo.default_read_access_principals) > 0)
-  }
-  repo_write_access_principals = {
-    for repo in var.repositories : repo.repository_name => repo.default_write_access_principals if(repo.default_write_access_principals != null
-    && length(repo.default_write_access_principals) > 0)
-  }
-  repo_final_policy_documents = data.aws_iam_policy_document.combined_default_policies
-  # repos_with_policy_files = [
-  #   for repo in var.repositories : repo.repository_name if repo.policy_document_path != null
-  # ]
-  all_sts_principals = {
-    for repo in var.repositories : repo.repository_name => distinct(concat(
-      repo.default_read_access_principals != null ? repo.default_read_access_principals : [],
-      repo.default_write_access_principals != null ? repo.default_write_access_principals : []
-    ))
-  }
 }
+
+data "aws_caller_identity" "current" {}
 
 resource "aws_codeartifact_domain" "repo_domain" {
   domain         = var.domain_name
@@ -66,89 +49,12 @@ resource "aws_codeartifact_repository" "repository" {
   tags = var.tags
 }
 
-data "aws_iam_policy_document" "default_readonly_repo_policy" {
-  for_each = { for k, v in local.repo_read_access_principals : k => v }
-  statement {
-    effect = "Allow"
-    actions = [
-      "codeartifact:DescribePackageVersion",
-      "codeartifact:DescribeRepository",
-      "codeartifact:GetPackageVersionReadme",
-      "codeartifact:GetRepositoryEndpoint",
-      "codeartifact:ListPackageVersionAssets",
-      "codeartifact:ListPackageVersionDependencies",
-      "codeartifact:ListPackageVersions",
-      "codeartifact:ListPackages",
-      "codeartifact:ReadFromRepository",
-    ]
-    resources = [aws_codeartifact_repository.repository[each.key].arn]
-    principals {
-      type        = "AWS"
-      identifiers = each.value
-    }
-  }
-}
-
-data "aws_iam_policy_document" "default_write_access_repo_policy" {
-  for_each = { for k, v in local.repo_write_access_principals : k => v }
-  statement {
-    effect = "Allow"
-    actions = [
-      "codeartifact:DescribePackageVersion",
-      "codeartifact:DescribeRepository",
-      "codeartifact:GetPackageVersionReadme",
-      "codeartifact:GetRepositoryEndpoint",
-      "codeartifact:ListPackageVersionAssets",
-      "codeartifact:ListPackageVersionDependencies",
-      "codeartifact:ListPackageVersions",
-      "codeartifact:ListPackages",
-      "codeartifact:PublishPackageVersion",
-      "codeartifact:PutPackageMetadata",
-      "codeartifact:ReadFromRepository",
-    ]
-    resources = [aws_codeartifact_repository.repository[each.key].arn]
-    principals {
-      type        = "AWS"
-      identifiers = each.value
-    }
-  }
-}
-
-data "aws_iam_policy_document" "default_sts_policy" {
-  for_each = local.all_sts_principals
-  statement {
-    effect    = "Allow"
-    actions   = ["sts:GetServiceBearerToken"]
-    resources = [aws_codeartifact_repository.repository[each.key].arn]
-    principals {
-      type        = "AWS"
-      identifiers = each.value
-    }
-    condition {
-      variable = "sts:AWSServiceName"
-      values   = ["codeartifact.amazonaws.com"]
-      test     = "StringEquals"
-    }
-  }
-}
-
-data "aws_iam_policy_document" "combined_default_policies" {
-  for_each = { for repo in var.repositories : repo.repository_name => repo if contains(keys(local.repo_read_access_principals), repo.repository_name) || contains(keys(local.repo_write_access_principals), repo.repository_name) }
-
-  source_policy_documents = compact(
-    [
-      try(data.aws_iam_policy_document.default_readonly_repo_policy[each.key].json, null),
-      try(data.aws_iam_policy_document.default_write_access_repo_policy[each.key].json, null),
-      try(data.aws_iam_policy_document.default_sts_policy[each.key].json, null)
-    ]
-  )
-}
 
 resource "aws_codeartifact_repository_permissions_policy" "repo_permissions_policy" {
-  for_each        = { for repo in var.repositories : repo.repository_name => repo if repo.policy_document_path != null || contains(keys(local.repo_final_policy_documents), repo.repository_name) }
+  for_each        = { for repo in var.repositories : repo.repository_name => repo if repo.policy_document_path != null }
   repository      = aws_codeartifact_repository.repository[each.key].repository
   domain          = aws_codeartifact_domain.repo_domain.domain
-  policy_document = each.value.policy_document_path != null ? file(each.value.policy_document_path) : local.repo_final_policy_documents[each.key].json
+  policy_document = file(each.value.policy_document_path)
   region          = var.repo_region != null ? var.repo_region : null
   domain_owner    = each.value.domain_owner != null ? each.value.domain_owner : null
 }
@@ -159,4 +65,165 @@ resource "aws_kms_key" "domain_encryption_key" {
   enable_key_rotation = true
   policy              = var.domain_encryption_key_policy_path != null ? file(var.domain_encryption_key_policy_path) : null
   tags                = var.tags
+}
+
+data "aws_iam_policy_document" "read_only_policy_document" {
+  count = var.reader_principals != null && length(var.reader_principals) > 0 ? 1 : 0
+  statement {
+    effect = "Allow"
+    actions = [
+      "codeartifact:ReadFromRepository",
+      "codeartifact:Get*",
+      "codeartifact:Describe*",
+      "codeartifact:List*"
+    ]
+    resources = [aws_codeartifact_domain.repo_domain.arn, "${aws_codeartifact_domain.repo_domain.arn}/*"]
+  }
+  statement {
+    effect  = "Allow"
+    actions = ["sts:GetServiceBearerToken"]
+    resources = [
+      aws_codeartifact_domain.repo_domain.arn,
+      "${aws_codeartifact_domain.repo_domain.arn}/*",
+      "arn:aws:sts::${data.aws_caller_identity.current.account_id}:assumed-role/${aws_iam_role.read_access_role[0].name}/*"
+    ]
+    condition {
+      variable = "sts:AWSServiceName"
+      values   = ["codeartifact.amazonaws.com"]
+      test     = "StringEquals"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "assume_read_only_role_document" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = var.reader_principals
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "publisher_policy_document" {
+  count = var.publisher_principals != null && length(var.publisher_principals) > 0 ? 1 : 0
+  statement {
+    effect = "Allow"
+    actions = [
+      "codeartifact:ReadFromRepository",
+      "codeartifact:Get*",
+      "codeartifact:Describe*",
+      "codeartifact:List*",
+      "codeartifact:PublishPackageVersion",
+      "codeartifact:PutPackageMetadata",
+      "codeartifact:CreatePackageGroup",
+      "coeedartifact:UpdatePackageGroup",
+      "codeartifact:CopyPackageVersions"
+    ]
+    resources = [
+      aws_codeartifact_domain.repo_domain.arn,
+      "${aws_codeartifact_domain.repo_domain.arn}/*",
+      replace("${aws_codeartifact_domain.repo_domain.arn}/*", ":domain/", ":package/")
+    ]
+  }
+  statement {
+    effect  = "Allow"
+    actions = ["sts:GetServiceBearerToken"]
+    resources = [
+      aws_codeartifact_domain.repo_domain.arn,
+      "${aws_codeartifact_domain.repo_domain.arn}/*",
+      "arn:aws:sts::${data.aws_caller_identity.current.account_id}:assumed-role/${aws_iam_role.publisher_access_role[0].name}/*"
+    ]
+    condition {
+      variable = "sts:AWSServiceName"
+      values   = ["codeartifact.amazonaws.com"]
+      test     = "StringEquals"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "assume_publisher_role_document" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = var.publisher_principals
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "admin_policy_document" {
+  count = var.admin_principals != null && length(var.admin_principals) > 0 ? 1 : 0
+  statement {
+    effect = "Allow"
+    actions = [
+      "codeartifact:*",
+    ]
+    resources = ["*"]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["sts:GetServiceBearerToken"]
+    resources = ["*"]
+    condition {
+      variable = "sts:AWSServiceName"
+      values   = ["codeartifact.amazonaws.com"]
+      test     = "StringEquals"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "assume_admin_role_document" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = var.admin_principals
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "read_access_role" {
+  count              = var.reader_principals != null && length(var.reader_principals) > 0 ? 1 : 0
+  name               = "CodeArtifactReadAccessRole-${aws_codeartifact_domain.repo_domain.domain}"
+  description        = "Role providing read access to CodeArtifact domain ${aws_codeartifact_domain.repo_domain.domain}"
+  assume_role_policy = data.aws_iam_policy_document.assume_read_only_role_document.json
+  tags               = var.tags
+}
+
+resource "aws_iam_role_policy" "read_only_role_policy" {
+  count  = var.reader_principals != null && length(var.reader_principals) > 0 ? 1 : 0
+  policy = data.aws_iam_policy_document.read_only_policy_document[0].json
+  role   = aws_iam_role.read_access_role[0].name
+}
+
+resource "aws_iam_role" "publisher_access_role" {
+  count              = var.publisher_principals != null && length(var.publisher_principals) > 0 ? 1 : 0
+  name               = "CodeArtifactPublisherAccessRole-${aws_codeartifact_domain.repo_domain.domain}"
+  description        = "Role providing publisher access to CodeArtifact domain ${aws_codeartifact_domain.repo_domain.domain}"
+  assume_role_policy = data.aws_iam_policy_document.assume_publisher_role_document.json
+  tags               = var.tags
+}
+
+resource "aws_iam_role_policy" "publisher_access_role_policy" {
+  count  = var.publisher_principals != null && length(var.publisher_principals) > 0 ? 1 : 0
+  policy = data.aws_iam_policy_document.publisher_policy_document[0].json
+  role   = aws_iam_role.publisher_access_role[0].name
+}
+
+resource "aws_iam_role" "admin_access_role" {
+  count              = var.admin_principals != null && length(var.admin_principals) > 0 ? 1 : 0
+  name               = "CodeArtifactAdminAccessRole-${aws_codeartifact_domain.repo_domain.domain}"
+  description        = "Role providing administrative access to CodeArtifact domain ${aws_codeartifact_domain.repo_domain.domain}"
+  assume_role_policy = data.aws_iam_policy_document.assume_admin_role_document.json
+  tags               = var.tags
+}
+
+resource "aws_iam_role_policy" "admin_access_role_policy" {
+  count  = var.admin_principals != null && length(var.admin_principals) > 0 ? 1 : 0
+  policy = data.aws_iam_policy_document.admin_policy_document[0].json
+  role   = aws_iam_role.admin_access_role[0].name
 }
