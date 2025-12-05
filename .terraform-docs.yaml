@@ -35,9 +35,7 @@ content: |-
   {{- if or $isResource $isDataResource }}
   {{- $fullspec := ternary .URL (printf "[%s](%s)" .Spec .URL) .Spec }}
   | {{ $fullspec }} | {{ .GetMode }} |
-  {{- if .Description }}
-  |**Description:** {{  tostring .Description | sanitizeMarkdownTbl   }} ||
-  {{- end }}
+  |**Description:** {{ if .Description }}{{  tostring .Description | sanitizeMarkdownTbl   }}{{ end }} ||
   {{- end }}
   {{- end }}
 
