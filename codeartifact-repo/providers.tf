@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: MPL-2.0
 
 terraform {
-  required_version = "~> 1.14.0"
+  required_version = ">= 1.14.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.21.0"
+      version = ">= 6.21.0"
     }
   }
 }
