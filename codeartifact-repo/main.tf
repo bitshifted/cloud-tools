@@ -5,14 +5,16 @@
 
 locals {
   should_create_kms_key = (!var.use_default_ecnryption_key && var.encryption_key_arn == null) ? true : false
+  resolved_region       = var.repo_region != null ? var.repo_region : data.aws_region.current_region.region
 }
 
 data "aws_caller_identity" "current" {}
+data "aws_region" "current_region" {}
 
 # CodeArtifact domain acting as a container for repositories
 resource "aws_codeartifact_domain" "repo_domain" {
   domain         = var.domain_name
-  region         = var.repo_region != null ? var.repo_region : null
+  region         = local.resolved_region
   encryption_key = var.use_default_ecnryption_key ? null : var.encryption_key_arn
   tags           = var.tags
 }

@@ -11,12 +11,8 @@ output "domain_owner" {
   value       = aws_codeartifact_domain.repo_domain.owner
 }
 
-output "created_repositories" {
-  description = "A list of names of the created repositories."
-  value       = tolist(keys(aws_codeartifact_repository.repository))
-}
 
-output "policy_documents" {
-  description = "A map of repository names to their applied policy documents (if any)."
-  value       = { for repo_name, repo_policy in aws_codeartifact_repository_permissions_policy.repo_permissions_policy : repo_name => repo_policy.policy_document }
+output "repo_urls" {
+  description = "A map of repository names to their repository endpoints."
+  value       = { for repo_name, repo in aws_codeartifact_repository.repository : repo_name => "https://${var.domain_name}-${aws_codeartifact_domain.repo_domain.owner}.d.codeartifact.${local.resolved_region}.amazonaws.com" }
 }

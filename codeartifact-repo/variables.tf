@@ -9,7 +9,7 @@ variable "domain_name" {
 variable "repo_region" {
   type        = string
   default     = null
-  description = "Region in which repository will be managed. If not specified, defaults to region configured for provider"
+  description = "Region in which repositories will be managed. If not specified, defaults to region configured for provider"
 }
 
 variable "use_default_ecnryption_key" {
