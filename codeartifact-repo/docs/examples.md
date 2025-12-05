@@ -35,6 +35,20 @@ module "my_repo" {
      }
   ]
 }
-    
+
+# Access module outputs
+
+output "repo_urls" {
+  value = module.codeartifact-repo.repo_urls
+  description = "Map of repository URLs for access"
 }
+
+output "repo_domain" {
+  value = module.codeartifact-repo.domain
+}
+
+output "repo_owner" {
+  value = module.codeartifact-repo.domain_owner
+}    
+
 ```

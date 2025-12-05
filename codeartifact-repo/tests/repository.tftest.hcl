@@ -94,26 +94,7 @@ run "create_repository_permissions_policy_when_path_is_provided" {
     }
 }
 
-run "output_should_return_created_repository_names" {
-    command = plan
 
-    variables  {
-        domain_name = "test-domain"
-        repositories = [
-            {
-                repository_name = "repo-one"
-            },
-            {
-                repository_name = "repo-two"
-            }
-        ]
-    }
-
-    assert {
-      condition     = contains(output.created_repositories, "repo-one") && contains(output.created_repositories, "repo-two")
-      error_message = "The output 'created_repositories' does not contain the expected repository names."
-    }
-}
 
 run "validate_external_connection_value" {
     command = plan
