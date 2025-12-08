@@ -10,3 +10,9 @@ codeartifact-repo-format: init
 
 codeartifact-repo-verify: init
 	cd ./codeartifact-repo  && ../scripts/verify.sh 
+
+easy-ecr-format: init
+	cd ./easy-ecr && ../scripts/format.sh 
+
+easy-ecr-verify: init
+	cd ./easy-ecr  && ../scripts/verify.sh 
