@@ -7,7 +7,7 @@ variable "repository_name" {
   description = "Name of the repository"
 }
 
-variable "repo_region" {
+variable "ecr_region" {
   type        = string
   default     = null
   description = "Region in which repositories will be managed. If not specified, defaults to region configured for provider"
@@ -94,6 +94,26 @@ variable "public_catalog_data" {
     condition     = length(var.public_catalog_data.operating_systems) == 0 || length([for a in var.public_catalog_data.operating_systems : a if contains(["Windows", "Linux"], a)]) == length(var.public_catalog_data.operating_systems)
     error_message = "Allowed values for operating system: 'Windows', 'Linux'"
   }
+}
+
+variable "registry_policy_path" {
+  type        = string
+  default     = null
+  description = "Path to JSON policy file (optional). If specified, policy will be applied to registry"
+}
+
+
+
+variable "repo_policy_path" {
+  type        = string
+  default     = null
+  description = "Path to JSON policy file (optional). If specified, policy will be applied to repository"
+}
+
+variable "repo_lifecycle_policy_path" {
+  type        = string
+  default     = null
+  description = "Path to JSON  file providing lifecycle policy for the repository"
 }
 
 variable "tags" {
