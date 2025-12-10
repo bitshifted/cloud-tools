@@ -110,10 +110,22 @@ variable "repo_policy_path" {
   description = "Path to JSON policy file (optional). If specified, policy will be applied to repository"
 }
 
-variable "repo_lifecycle_policy_path" {
+variable "public_repo_policy_path" {
+  type        = string
+  default     = null
+  description = "Path to JSON policy file (optional). If specified, policy will be applied to public repository."
+}
+
+variable "image_lifecycle_policy_path" {
   type        = string
   default     = null
   description = "Path to JSON  file providing lifecycle policy for the repository"
+}
+
+variable "use_default_image_lifecycle_policy" {
+  type        = bool
+  default     = true
+  description = "Whether to use default image lifecycle or not. Defaults to true."
 }
 
 variable "tags" {
