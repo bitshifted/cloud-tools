@@ -128,6 +128,84 @@ variable "use_default_image_lifecycle_policy" {
   description = "Whether to use default image lifecycle or not. Defaults to true."
 }
 
+variable "aws_public_pullthrough_cache_rule" {
+  type = object({
+    enabled                    = optional(bool, false)
+    ecr_repository_prefix      = optional(string, "ROOT")
+    upstream_repository_prefix = optional(string, "ROOT")
+    # credential_arn = optional(string, null)
+    # custom_role_arn = optional(string, null)
+    # upstream_registry_url = optional(string, null)
+  })
+  default     = {}
+  description = "Pullthrough cache rule for AWS public registry. Override default values to customize"
+}
+
+variable "k8s_pullthrough_cache_rule" {
+  type = object({
+    enabled                    = optional(bool, false)
+    ecr_repository_prefix      = optional(string, "ROOT")
+    upstream_repository_prefix = optional(string, "ROOT")
+  })
+  default     = {}
+  description = "Pullthrough cache rule for Kubernetes public registry. Override default values to customize"
+}
+
+variable "quay_pullthrough_cache_rule" {
+  type = object({
+    enabled                    = optional(bool, false)
+    ecr_repository_prefix      = optional(string, "ROOT")
+    upstream_repository_prefix = optional(string, "ROOT")
+  })
+  default     = {}
+  description = "Pullthrough cache rule for Quay public registry. Override default values to customize"
+}
+
+variable "docker_hub_pullthrough_cache_rule" {
+  type = object({
+    enabled                    = optional(bool, false)
+    ecr_repository_prefix      = optional(string, "ROOT")
+    upstream_repository_prefix = optional(string, "ROOT")
+    credential_arn             = optional(string, null)
+  })
+  default     = {}
+  description = "Pullthrough cache rule for Docker Hub  registry. Override default values to customize"
+}
+
+variable "github_cr_pullthrough_cache_rule" {
+  type = object({
+    enabled                    = optional(bool, false)
+    ecr_repository_prefix      = optional(string, "ROOT")
+    upstream_repository_prefix = optional(string, "ROOT")
+    credential_arn             = optional(string, null)
+  })
+  default     = {}
+  description = "Pullthrough cache rule for Github Container  registry. Override default values to customize"
+}
+
+variable "gitlab_cr_pullthrough_cache_rule" {
+  type = object({
+    enabled                    = optional(bool, false)
+    ecr_repository_prefix      = optional(string, "ROOT")
+    upstream_repository_prefix = optional(string, "ROOT")
+    credential_arn             = optional(string, null)
+  })
+  default     = {}
+  description = "Pullthrough cache rule for Gitlab Container  registry. Override default values to customize"
+}
+
+variable "pullthrough_cache_rules" {
+  type = list(object({
+    ecr_repository_prefix      = optional(string, "ROOT")
+    upstream_repository_prefix = optional(string, "ROOT")
+    credential_arn             = optional(string, null)
+    custom_role_arn            = optional(string, null)
+    upstream_registry_url      = string
+  }))
+  default     = []
+  description = "List of custom pullthrough cache rules to apply to repository"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}
