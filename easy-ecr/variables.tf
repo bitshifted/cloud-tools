@@ -213,6 +213,17 @@ variable "default_account_scan_config" {
   description = "Default ECR basic scan type configuration."
 }
 
+variable "registry_scan_configuration" {
+  type = object({
+    type = optional(string, "BASIC")
+    rules = optional(list(object({
+      frequency = optional(string, "SCAN_ON_PUSH")
+      filter    = optional(string, "*")
+    })), [])
+  })
+  default = {}
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}

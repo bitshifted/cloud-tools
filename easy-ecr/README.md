@@ -37,6 +37,8 @@ This Terraform module provides production-ready ECR repository for storing conta
 |**Description:**  ||
 | [aws_ecr_registry_policy.registry_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_registry_policy) | resource |
 |**Description:**  ||
+| [aws_ecr_registry_scanning_configuration.registry_scan_config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_registry_scanning_configuration) | resource |
+|**Description:**  ||
 | [aws_ecr_repository.ecr_private_repo](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository) | resource |
 |**Description:**  ||
 | [aws_ecr_repository_policy.repo_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository_policy) | resource |
@@ -70,6 +72,7 @@ This Terraform module provides production-ready ECR repository for storing conta
 | <a name="input_pullthrough_cache_rules"></a> [pullthrough\_cache\_rules](#input\_pullthrough\_cache\_rules) | List of custom pullthrough cache rules to apply to repository | <pre>list(object({<br/>    ecr_repository_prefix      = optional(string, "ROOT")<br/>    upstream_repository_prefix = optional(string, "ROOT")<br/>    credential_arn             = optional(string, null)<br/>    custom_role_arn            = optional(string, null)<br/>    upstream_registry_url      = string<br/>  }))</pre> | `[]` | no |
 | <a name="input_quay_pullthrough_cache_rule"></a> [quay\_pullthrough\_cache\_rule](#input\_quay\_pullthrough\_cache\_rule) | Pullthrough cache rule for Quay public registry. Override default values to customize | <pre>object({<br/>    enabled                    = optional(bool, false)<br/>    ecr_repository_prefix      = optional(string, "ROOT")<br/>    upstream_repository_prefix = optional(string, "ROOT")<br/>  })</pre> | `{}` | no |
 | <a name="input_registry_policy_path"></a> [registry\_policy\_path](#input\_registry\_policy\_path) | Path to JSON policy file (optional). If specified, policy will be applied to registry | `string` | `null` | no |
+| <a name="input_registry_scan_configuration"></a> [registry\_scan\_configuration](#input\_registry\_scan\_configuration) | n/a | <pre>object({<br/>    type = optional(string, "BASIC")<br/>    rules = optional(list(object({<br/>      frequency = optional(string, "SCAN_ON_PUSH")<br/>      filter    = optional(string, "*")<br/>    })), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_repo_policy_path"></a> [repo\_policy\_path](#input\_repo\_policy\_path) | Path to JSON policy file (optional). If specified, policy will be applied to repository | `string` | `null` | no |
 | <a name="input_repository_name"></a> [repository\_name](#input\_repository\_name) | Name of the repository | `string` | n/a | yes |
 | <a name="input_scan_images_on_push"></a> [scan\_images\_on\_push](#input\_scan\_images\_on\_push) | Whether images are scanned after being pushed to the repository (true) or not scanned (false). Default is true. | `bool` | `true` | no |
