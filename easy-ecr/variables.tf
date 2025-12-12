@@ -102,8 +102,6 @@ variable "registry_policy_path" {
   description = "Path to JSON policy file (optional). If specified, policy will be applied to registry"
 }
 
-
-
 variable "repo_policy_path" {
   type        = string
   default     = null
@@ -133,9 +131,6 @@ variable "aws_public_pullthrough_cache_rule" {
     enabled                    = optional(bool, false)
     ecr_repository_prefix      = optional(string, "ROOT")
     upstream_repository_prefix = optional(string, "ROOT")
-    # credential_arn = optional(string, null)
-    # custom_role_arn = optional(string, null)
-    # upstream_registry_url = optional(string, null)
   })
   default     = {}
   description = "Pullthrough cache rule for AWS public registry. Override default values to customize"
@@ -204,6 +199,18 @@ variable "pullthrough_cache_rules" {
   }))
   default     = []
   description = "List of custom pullthrough cache rules to apply to repository"
+}
+
+variable "default_account_scan_config" {
+  type = object({
+    name  = string
+    value = string
+  })
+  default = {
+    name  = "BASIC_SCAN_TYPE_VERSION"
+    value = "AWS_NATIVE"
+  }
+  description = "Default ECR basic scan type configuration."
 }
 
 variable "tags" {

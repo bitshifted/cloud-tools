@@ -27,6 +27,8 @@ This Terraform module provides production-ready ECR repository for storing conta
 ## Resources
 | Name | Type |
 |------|------|
+| [aws_ecr_account_setting.account_scan_config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_account_setting) | resource |
+|**Description:**  ||
 | [aws_ecr_lifecycle_policy.repo_lifecycle_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_lifecycle_policy) | resource |
 |**Description:**  ||
 | [aws_ecr_pull_through_cache_rule.custom_pullthrough_cache_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_pull_through_cache_rule) | resource |
@@ -50,7 +52,8 @@ This Terraform module provides production-ready ECR repository for storing conta
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_aws_public_pullthrough_cache_rule"></a> [aws\_public\_pullthrough\_cache\_rule](#input\_aws\_public\_pullthrough\_cache\_rule) | Pullthrough cache rule for AWS public registry. Override default values to customize | <pre>object({<br/>    enabled                    = optional(bool, false)<br/>    ecr_repository_prefix      = optional(string, "ROOT")<br/>    upstream_repository_prefix = optional(string, "ROOT")<br/>    # credential_arn = optional(string, null)<br/>    # custom_role_arn = optional(string, null)<br/>    # upstream_registry_url = optional(string, null)<br/>  })</pre> | `{}` | no |
+| <a name="input_aws_public_pullthrough_cache_rule"></a> [aws\_public\_pullthrough\_cache\_rule](#input\_aws\_public\_pullthrough\_cache\_rule) | Pullthrough cache rule for AWS public registry. Override default values to customize | <pre>object({<br/>    enabled                    = optional(bool, false)<br/>    ecr_repository_prefix      = optional(string, "ROOT")<br/>    upstream_repository_prefix = optional(string, "ROOT")<br/>  })</pre> | `{}` | no |
+| <a name="input_default_account_scan_config"></a> [default\_account\_scan\_config](#input\_default\_account\_scan\_config) | Default ECR basic scan type configuration. | <pre>object({<br/>    name  = string<br/>    value = string<br/>  })</pre> | <pre>{<br/>  "name": "BASIC_SCAN_TYPE_VERSION",<br/>  "value": "AWS_NATIVE"<br/>}</pre> | no |
 | <a name="input_docker_hub_pullthrough_cache_rule"></a> [docker\_hub\_pullthrough\_cache\_rule](#input\_docker\_hub\_pullthrough\_cache\_rule) | Pullthrough cache rule for Docker Hub  registry. Override default values to customize | <pre>object({<br/>    enabled                    = optional(bool, false)<br/>    ecr_repository_prefix      = optional(string, "ROOT")<br/>    upstream_repository_prefix = optional(string, "ROOT")<br/>    credential_arn             = optional(string, null)<br/>  })</pre> | `{}` | no |
 | <a name="input_domain_encryption_key_policy_path"></a> [domain\_encryption\_key\_policy\_path](#input\_domain\_encryption\_key\_policy\_path) | Local path to policy file to be applied to created KMS key. If not specified, no custom policy is applied. | `string` | `null` | no |
 | <a name="input_ecr_region"></a> [ecr\_region](#input\_ecr\_region) | Region in which repositories will be managed. If not specified, defaults to region configured for provider | `string` | `null` | no |

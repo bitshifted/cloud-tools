@@ -6,7 +6,7 @@
 locals {
   resolved_region       = var.ecr_region != null ? var.ecr_region : data.aws_region.current_region.region
   should_create_kms_key = (!var.use_default_ecnryption_key && var.encryption_key_arn == null) ? true : false
-  image_tag_mutability  = var.image_tag_mutable ? (length(var.mutability_exclusion_filters) > 0 ? "MUTABLE_WITH_EXCLUSION" : "MUTABLE") : "IMMUTABLE"
+  image_tag_mutability  = var.image_tag_mutable ? (length(var.mutability_exclusion_filters) > 0 ? "MUTABLE_WITH_EXCLUSION" : "MUTABLE") : (length(var.mutability_exclusion_filters) > 0 ? "IMMUTABLE_WITH_EXCLUSION" : "IMUTABLE")
 }
 
 data "aws_region" "current_region" {}
