@@ -1,0 +1,30 @@
+{
+  "rules": [
+    {
+      "rulePriority": 10,
+      "description": "Untagged images policy",
+      "selection": {
+        "tagStatus": "untagged",
+        "countType": "sinceImagePushed",
+        "countUnit": "days",
+        "countNumber": 30
+      },
+      "action": {
+        "type": "expire"
+      }
+    },
+    {
+      "rulePriority": 20,
+      "description": "Any image policy",
+      "selection": {
+        "tagStatus": "tagged",
+        "tagPatternList": ["*"],
+        "countType": "imageCountMoreThan",
+        "countNumber": 10
+      },
+      "action": {
+        "type": "expire"
+      }
+    }
+  ]
+}
