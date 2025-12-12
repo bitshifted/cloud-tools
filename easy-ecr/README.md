@@ -40,7 +40,7 @@ This Terraform module provides production-ready ECR repository for storing conta
 | [aws_ecr_registry_scanning_configuration.registry_scan_config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_registry_scanning_configuration) | resource |
 |**Description:**  ||
 | [aws_ecr_replication_configuration.replication_config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_replication_configuration) | resource |
-|**Description:**  ||
+|**Description:** Defines registry replication configuration. Current implementation allows only replication withing the same AWS account. It is possible to define rul;e filters for replication. ||
 | [aws_ecr_repository.ecr_private_repo](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository) | resource |
 |**Description:**  ||
 | [aws_ecr_repository_policy.repo_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository_policy) | resource |

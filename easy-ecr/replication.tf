@@ -5,6 +5,8 @@
 
 data "aws_caller_identity" "current" {}
 
+# Defines registry replication configuration. Current implementation allows only replication 
+# withing the same AWS account. It is possible to define rul;e filters for replication.
 resource "aws_ecr_replication_configuration" "replication_config" {
   count  = length(var.replication_config) > 0 ? 1 : 0
   region = var.ecr_region != null ? var.ecr_region : data.aws_region.current_region.region
