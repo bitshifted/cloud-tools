@@ -221,7 +221,17 @@ variable "registry_scan_configuration" {
       filter    = optional(string, "*")
     })), [])
   })
-  default = {}
+  default     = {}
+  description = "Registry scanning configuration"
+}
+
+variable "replication_config" {
+  type = list(object({
+    region = string
+    filter = optional(string, null)
+  }))
+  default     = []
+  description = "Registry replication configuration"
 }
 
 variable "tags" {
