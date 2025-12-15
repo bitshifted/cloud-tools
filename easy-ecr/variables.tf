@@ -234,6 +234,18 @@ variable "replication_config" {
   description = "Registry replication configuration"
 }
 
+variable "pull_only_principals" {
+  type        = list(string)
+  default     = []
+  description = "List of principal ARNs who are allowed to assume role allowing pull access to repository"
+}
+
+variable "push_principals" {
+  type        = list(string)
+  default     = []
+  description = "List of principal ARNs who are allowed to assume role allowing read/write (push) access to repository"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}
