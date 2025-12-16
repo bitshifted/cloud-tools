@@ -213,6 +213,39 @@ variable "default_account_scan_config" {
   description = "Default ECR basic scan type configuration."
 }
 
+variable "registry_scan_configuration" {
+  type = object({
+    type = optional(string, "BASIC")
+    rules = optional(list(object({
+      frequency = optional(string, "SCAN_ON_PUSH")
+      filter    = optional(string, "*")
+    })), [])
+  })
+  default     = {}
+  description = "Registry scanning configuration"
+}
+
+variable "replication_config" {
+  type = list(object({
+    region = string
+    filter = optional(string, null)
+  }))
+  default     = []
+  description = "Registry replication configuration"
+}
+
+variable "pull_only_principals" {
+  type        = list(string)
+  default     = []
+  description = "List of principal ARNs who are allowed to assume role allowing pull access to repository"
+}
+
+variable "push_principals" {
+  type        = list(string)
+  default     = []
+  description = "List of principal ARNs who are allowed to assume role allowing read/write (push) access to repository"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}
