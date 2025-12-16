@@ -27,6 +27,8 @@ locals {
 
 }
 
+# Defines default pullthrough cache rules from well-known sources (Docker Hub, Github, Quay etc). By default, all
+# cache rules are disabled.
 resource "aws_ecr_pull_through_cache_rule" "default_pullthrough_cache_rule" {
   for_each                   = { for k, v in local.default_cache_rules : k => v if v.enabled == true }
   region                     = var.ecr_region != null ? var.ecr_region : data.aws_region.current_region.region
@@ -37,6 +39,7 @@ resource "aws_ecr_pull_through_cache_rule" "default_pullthrough_cache_rule" {
   upstream_repository_prefix = each.value.upstream_repository_prefix
 }
 
+# Custom user-defined pullthrough cache rules.
 resource "aws_ecr_pull_through_cache_rule" "custom_pullthrough_cache_rule" {
   for_each                   = { for k, v in var.pullthrough_cache_rules : k => v }
   region                     = var.ecr_region != null ? var.ecr_region : data.aws_region.current_region.region

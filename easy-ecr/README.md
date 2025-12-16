@@ -28,27 +28,27 @@ This Terraform module provides production-ready ECR repository for storing conta
 | Name | Type |
 |------|------|
 | [aws_ecr_account_setting.account_scan_config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_account_setting) | resource |
-|**Description:**  ||
+|**Description:** Configures default registry scan setting. By default, `BASIC` scan type is used wit `AWS_NATIVE` configuration. ||
 | [aws_ecr_lifecycle_policy.repo_lifecycle_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_lifecycle_policy) | resource |
-|**Description:**  ||
+|**Description:** Lifecycle policy applied to images inside the repository ||
 | [aws_ecr_pull_through_cache_rule.custom_pullthrough_cache_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_pull_through_cache_rule) | resource |
-|**Description:**  ||
+|**Description:** Custom user-defined pullthrough cache rules. ||
 | [aws_ecr_pull_through_cache_rule.default_pullthrough_cache_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_pull_through_cache_rule) | resource |
-|**Description:**  ||
+|**Description:** Defines default pullthrough cache rules from well-known sources (Docker Hub, Github, Quay etc). By default, all cache rules are disabled. ||
 | [aws_ecr_registry_policy.registry_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_registry_policy) | resource |
-|**Description:**  ||
+|**Description:** IAM policy to be applied to ECR registry. ||
 | [aws_ecr_registry_scanning_configuration.registry_scan_config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_registry_scanning_configuration) | resource |
-|**Description:**  ||
+|**Description:** Configures registry scanning configuration. ||
 | [aws_ecr_replication_configuration.replication_config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_replication_configuration) | resource |
 |**Description:** Defines registry replication configuration. Current implementation allows only replication withing the same AWS account. It is possible to define rule filters for replication. ||
 | [aws_ecr_repository.ecr_private_repo](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository) | resource |
-|**Description:**  ||
+|**Description:** Private repository to create. Only created if variable `visibility` is set to `PRIVATE`. ||
 | [aws_ecr_repository_policy.repo_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository_policy) | resource |
-|**Description:**  ||
+|**Description:** IAM policy to be applied to ECR repository. ||
 | [aws_ecrpublic_repository.ecr_public_repo](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecrpublic_repository) | resource |
-|**Description:**  ||
+|**Description:** Public repository to create. Only created if variable `visibility` is set to `PUBLIC`. ||
 | [aws_ecrpublic_repository_policy.public_repo_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecrpublic_repository_policy) | resource |
-|**Description:**  ||
+|**Description:** IAM policy applied to public repository. ||
 | [aws_iam_role.repo_push_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 |**Description:** Role which allows read/write access to repository ||
 | [aws_iam_role.repo_read_only_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
@@ -58,7 +58,7 @@ This Terraform module provides production-ready ECR repository for storing conta
 | [aws_iam_role_policy.read_only_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 |**Description:** IAM policy for role allowing read-only (pull) access to repository ||
 | [aws_kms_key.domain_encryption_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
-|**Description:**  ||
+|**Description:** KMS encryption for repository domain. Created if variable `use_default_ecnryption_key` is false and no KMS key ARN provided ||
 
 ## Inputs
 
@@ -109,6 +109,37 @@ Examples configuration for using the module:
 
 module "easy_ecr" {
     source = ""https://github.com/bitshifted/cloud-tools//easy-ecr?ref=easy-ecr-<current version>"
+
+    # name of repository to create
+    repository_name = "test-private-repo"
+    # whether image tags are MUTABLE (true) or IMMUTBLE (false)
+    image_tag_mutable = false
+    # exclusion filter to apply to image tags
+    mutability_exclusion_filters = ["dev*"]
+
+    # custom registry policy
+    registry_policy_path = "./registry-policy.json"
+
+    # custom repository -policy
+    repo_policy_path = "./repo-policy.json"
+
+    # pullthrough cache settings
+   # enable pull through cache for AWS ECR public registry
+   aws_public_pullthrough_cache_rule = {
+    enabled = true
+  }
+
+  # principal ARNs listed here will have permissions to assume the role which allows pulling images from repository
+  pull_only_principals = ["arn:aws:iam::12345667:user/user1"]
+
+  # principal ARNs listed here will have permissions to assume the role which allows publishing images
+  push_principals = ["arn:aws:iam::12345667:user/user1
+
+  # tags applied to all created resources
+  tags = {
+    "Environment" = "Test"
+    "Project" = "EasyEcrModule"
+  }
 }
 ```
 <!-- END_TF_DOCS -->
