@@ -96,7 +96,10 @@ This Terraform module provides production-ready ECR repository for storing conta
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_private_repository_arn"></a> [private\_repository\_arn](#output\_private\_repository\_arn) | ARN of the private repository |
+| <a name="output_private_repository_url"></a> [private\_repository\_url](#output\_private\_repository\_url) | URL of the private repository |
 
 ## Examples
 

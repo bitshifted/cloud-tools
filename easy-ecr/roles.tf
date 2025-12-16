@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "pull_only_policy_document" {
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchImportUpstreamImage"
     ]
-    resources = [aws_ecr_repository.ecr_private_repo[0].arn, "${aws_ecr_repository.ecr_private_repo[0].arn}/*"]
+    resources = ["arn:aws:ecr:${data.aws_region.current_region.region}:${data.aws_caller_identity.current.account_id}:repository/*"]
   }
 }
 
@@ -86,9 +86,10 @@ data "aws_iam_policy_document" "push_policy_document" {
       "ecr:InitiateLayerUpload",
       "ecr:UploadLayerPart",
       "ecr:CompleteLayerUpload",
-      "ecr:PutImage"
+      "ecr:PutImage",
+      "ecr:BatchImportUpstreamImage"
     ]
-    resources = [aws_ecr_repository.ecr_private_repo[0].arn, "${aws_ecr_repository.ecr_private_repo[0].arn}/*"]
+    resources = ["arn:aws:ecr:${data.aws_region.current_region.region}:${data.aws_caller_identity.current.account_id}:repository/*"]
   }
 }
 
