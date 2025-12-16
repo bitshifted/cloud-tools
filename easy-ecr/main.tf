@@ -11,6 +11,7 @@ locals {
 
 data "aws_region" "current_region" {}
 
+# Private repository to create. Only created if variable `visibility` is set to `PRIVATE`.
 resource "aws_ecr_repository" "ecr_private_repo" {
   count                = var.visibility == "PRIVATE" ? 1 : 0
   name                 = var.repository_name
@@ -39,6 +40,7 @@ resource "aws_ecr_repository" "ecr_private_repo" {
   tags = var.tags
 }
 
+# Public repository to create. Only created if variable `visibility` is set to `PUBLIC`.
 resource "aws_ecrpublic_repository" "ecr_public_repo" {
   count           = var.visibility == "PUBLIC" ? 1 : 0
   repository_name = var.repository_name
@@ -56,6 +58,7 @@ resource "aws_ecrpublic_repository" "ecr_public_repo" {
   tags = var.tags
 }
 
+# KMS encryption for repository domain. Created if variable `use_default_ecnryption_key` is false and no KMS key ARN provided
 resource "aws_kms_key" "domain_encryption_key" {
   count               = local.should_create_kms_key ? 1 : 0
   description         = "KMS key for ECR repository domain ${var.repository_name}"

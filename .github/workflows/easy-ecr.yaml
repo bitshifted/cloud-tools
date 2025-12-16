@@ -16,6 +16,8 @@ on:
 jobs:
   test-and-verify:
     runs-on: ubuntu-24.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
