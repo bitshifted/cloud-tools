@@ -7,7 +7,7 @@ echo "Formatting files..."
 echo "Adding license headers..."
 echo "dir: $(pwd)"
 $GOPATH/bin/addlicense -c 'Bitshift' -y 2025 -l mpl -s=only ./*.tf || exit 1
-cd tests && $GOPATH/bin/addlicense -check -c 'Bitshift' -y 2025 -l mpl -s=only ./*.tftest.hcl || exit 1
+cd tests && $GOPATH/bin/addlicense -check -c 'Bitshift-ED' -y 2025 -l mpl -s=only ./*.tftest.hcl || exit 1
 cd ..
 
 echo "License headers added successfully"

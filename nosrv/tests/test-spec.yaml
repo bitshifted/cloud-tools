@@ -3,6 +3,13 @@ openapi: 3.0.1
 info:
   title: Test API
   version: '1.0'
+security:
+  - openId: []
+components:
+  securitySchemes:
+    openId:
+      type: oauth2
+      flows: {}
 paths:
   /test:
     get:
