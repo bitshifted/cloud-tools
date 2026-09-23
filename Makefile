@@ -16,3 +16,15 @@ easy-ecr-format: init
 
 easy-ecr-verify: init
 	cd ./easy-ecr  && ../scripts/verify.sh 
+
+ddb-express-format: init
+	cd ./ddb-express && ../scripts/format.sh 
+
+ddb-express-verify: init
+	cd ./ddb-express  && ../scripts/verify.sh 
+
+nosrv-format: init
+	cd ./nosrv && ../scripts/format.sh 
+
+nosrv-verify: init
+	cd ./nosrv  && ../scripts/verify.sh
