@@ -121,6 +121,19 @@ variable "enable_api_logging" {
   description = "Enable CloudWatch access logging for the API Stage."
 }
 
+variable "api_cors_config" {
+  type = object({
+    allow_credentials = optional(bool, false)
+    allow_headers     = optional(list(string), ["*"])
+    allow_methods     = optional(list(string), ["*"])
+    allow_origins     = list(string)
+    expose_headers    = optional(list(string), [])
+    max_age           = optional(number, 3600)
+  })
+  default     = null
+  description = "CORS configuration for the API Gateway. If not provided, CORS configuration is not applied."
+}
+
 variable "api_log_retention" {
   type        = number
   default     = 7
