@@ -25,8 +25,8 @@ Serverless application stack configuration.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_archive"></a> [archive](#provider\_archive) | 2.7.1 |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.41.0 |
+| <a name="provider_archive"></a> [archive](#provider\_archive) | 2.8.1 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.66.0 |
 
 ## Resources
 | Name | Type |
@@ -64,6 +64,7 @@ Serverless application stack configuration.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_api_cors_config"></a> [api\_cors\_config](#input\_api\_cors\_config) | CORS configuration for the API Gateway. If not provided, CORS configuration is not applied. | <pre>object({<br/>    allow_credentials = optional(bool, false)<br/>    allow_headers     = optional(list(string), ["*"])<br/>    allow_methods     = optional(list(string), ["*"])<br/>    allow_origins     = list(string)<br/>    expose_headers    = optional(list(string), [])<br/>    max_age           = optional(number, 3600)<br/>  })</pre> | `null` | no |
 | <a name="input_api_log_retention"></a> [api\_log\_retention](#input\_api\_log\_retention) | Retention in days for API access logs. | `number` | `7` | no |
 | <a name="input_api_name"></a> [api\_name](#input\_api\_name) | Base name for the API Gateway. Required if `enable_api_gateway` is true. | `string` | `null` | no |
 | <a name="input_dlq_name"></a> [dlq\_name](#input\_dlq\_name) | Name of the shared SQS DLQ. | `string` | `"sqs-shared-dlq"` | no |

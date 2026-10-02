@@ -27,6 +27,18 @@ resource "aws_apigatewayv2_api" "this" {
       error_message = "openapi_spec must be provided when enable_api_gateway is true."
     }
   }
+  # CORS configuration for the API Gateway
+  dynamic "cors_configuration" {
+    for_each = var.api_cors_config != null ? [1] : []
+    content {
+      allow_credentials = var.api_cors_config.allow_credentials
+      allow_headers     = var.api_cors_config.allow_headers
+      allow_methods     = var.api_cors_config.allow_methods
+      allow_origins     = var.api_cors_config.allow_origins
+      expose_headers    = var.api_cors_config.expose_headers
+      max_age           = var.api_cors_config.max_age
+    }
+  }
 
   tags = local.merged_tags
 }
