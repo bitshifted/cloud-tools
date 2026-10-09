@@ -36,3 +36,9 @@ nosrv-format: init
 
 nosrv-verify: init
 	cd ./nosrv  && ../scripts/verify.sh
+
+webfront-format: init
+	cd ./webfront && ../scripts/format.sh 
+
+webfront-verify: init
+	cd ./webfront  && ../scripts/verify.sh
