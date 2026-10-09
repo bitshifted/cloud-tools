@@ -27,5 +27,5 @@ tflint -c ../.tflint.hcl --init && tflint -c ../.tflint.hcl || exit 1
 echo "Tflint check successfull"
 
 echo "Running Checkov scan..."
-checkov -d . || exit 1
+../.venv/bin/checkov -d . || exit 1
 echo "Checkov scan successfull"
